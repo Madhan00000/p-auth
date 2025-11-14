@@ -39,7 +39,7 @@ exports.handler = async (event) => {
     // login successful — you can return user info
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, message: "Login successful", email: user.email }),
+      body: JSON.stringify({ success: true, message: "Login successful", email: user.email, referralCode: user.referralCode }),
     };
   } catch (err) {
     console.error("login error:", err);
