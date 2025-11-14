@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify Page</title>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      max-width: 600px;
+      margin: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: 0.3s;
+      margin: 10px;
+      width: 200px;
+      background-color: #ff5722;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #e64a19;
+    }
+
+    a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="color: white;">User Verification</h1>
+
+    <p style="display: none;"><strong>User ID:</strong> <span id="userIdDisplay"></span></p>
+    <p style="color: white;">By clicking the verify button, you will be redirected to your browser...</p>
+
+    <a id="verifyBtn" href="#" target="_blank" style="display: none;">
+      <button>Verify</button>
+    </a>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem("userId");
+    const userIdDisplay = document.getElementById("userIdDisplay");
+    const verifyBtn = document.getElementById("verifyBtn");
+
+    if (userId) {
+      userIdDisplay.textContent = userId;
+
+      // Build fallback URL with existing userId
+      const fallbackUrl = `https://sfl.gl/st/?api=fd2976f682b31724c27b902497a27eb85d5c8565&url=https://0-0-0-1.netlify.app/verificationsuccess.html?userId=${userId}`;
+      verifyBtn.href = fallbackUrl;
+      verifyBtn.style.display = "inline-block";
+    } else {
+      userIdDisplay.textContent = "User ID not found in localStorage.";
+    }
+  </script>
+</body>
+</html>

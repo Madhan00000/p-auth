@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verification Success</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f0f4ff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+      }
+      h1 {
+        color: #0070f3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Account Verification</h1>
+      <p id="status">Processing...</p>
+    </div>
+
+    <script>
+      async function verifyUser() {
+        const params = new URLSearchParams(window.location.search);
+        const email = params.get("email");
+        const statusEl = document.getElementById("status");
+
+        if (!email) {
+          statusEl.innerText = "❌ Invalid link: No email found.";
+          return;
+        }
+
+        try {
+          const res = await fetch("/.netlify/functions/verifyTokenStatus", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            const expires = new Date(data.expiresAt);
+            const localTime = expires.toLocaleTimeString();
+            statusEl.innerHTML = `✅ ${data.message}<br/><small>Expires at: ${localTime}</small>`;
+          } else {
+            statusEl.innerText = `❌ ${data.error}`;
+          }
+        } catch (err) {
+          statusEl.innerText = "❌ Network error. Please try again.";
+        }
+      }
+
+      verifyUser();
+    </script>
+  </body>
+</html>
