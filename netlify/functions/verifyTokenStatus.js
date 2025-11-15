@@ -1,9 +1,11 @@
 // /netlify/functions/verifyTokenStatus.js
+// /netlify/functions/verifyTokenStatus.js
 const { MongoClient } = require("mongodb");
 
 exports.handler = async (event) => {
   try {
     const { email } = JSON.parse(event.body || "{}");
+
     if (!email) {
       return {
         statusCode: 400,
@@ -17,6 +19,7 @@ exports.handler = async (event) => {
     const users = db.collection("users");
 
     const user = await users.findOne({ email });
+
     if (!user) {
       await client.close();
       return {
@@ -25,11 +28,24 @@ exports.handler = async (event) => {
       };
     }
 
-    // ✅ Give 1-hour expiry on normal verification
-    const expiryTime = new Date(Date.now() + 10 * 60 * 1000);
+    // Check if user is already active
+    if (user.tokenStatus === "active" && user.tokenExpiry && new Date(user.tokenExpiry) > new Date()) {
+      await client.close();
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "Token is already active. No overwrite done.",
+          tokenStatus: user.tokenStatus,
+          expiresAt: user.tokenExpiry,
+        }),
+      };
+    }
+
+    // Only activate if inactive
+    const expiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
     await users.updateOne(
-      { email },
+      { email, tokenStatus: "inactive" },  // ensures overwrite happens ONLY if inactive
       {
         $set: {
           tokenStatus: "active",
@@ -43,10 +59,11 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: `Verification successful! Token active for 1 hour.`,
+        message: "Verification successful! Token activated.",
         expiresAt: expiryTime,
       }),
     };
+
   } catch (err) {
     console.error(err);
     return {
