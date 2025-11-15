@@ -1,5 +1,6 @@
 // /netlify/functions/verifyTokenStatus.js
 // /netlify/functions/verifyTokenStatus.js
+// /netlify/functions/verifyTokenStatus.js
 const { MongoClient } = require("mongodb");
 
 exports.handler = async (event) => {
@@ -19,7 +20,6 @@ exports.handler = async (event) => {
     const users = db.collection("users");
 
     const user = await users.findOne({ email });
-
     if (!user) {
       await client.close();
       return {
@@ -28,28 +28,32 @@ exports.handler = async (event) => {
       };
     }
 
-    // Check if user is already active
-    if (user.tokenStatus === "active" && user.tokenExpiry && new Date(user.tokenExpiry) > new Date()) {
+    const now = new Date();
+    const expiry = user.tokenExpiry ? new Date(user.tokenExpiry) : null;
+    const isExpired = !expiry || expiry <= now;
+
+    // ❌ If token is active and NOT expired → don't update
+    if (user.tokenStatus === "active" && !isExpired) {
       await client.close();
       return {
         statusCode: 200,
         body: JSON.stringify({
-          message: "Token is already active. No overwrite done.",
+          message: "Token already active. No update done.",
           tokenStatus: user.tokenStatus,
           expiresAt: user.tokenExpiry,
         }),
       };
     }
 
-    // Only activate if inactive
-    const expiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    // ✅ If inactive OR expired → activate + set new expiry
+    const newExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     await users.updateOne(
-      { email, tokenStatus: "inactive" },  // ensures overwrite happens ONLY if inactive
+      { email },
       {
         $set: {
           tokenStatus: "active",
-          tokenExpiry: expiryTime,
+          tokenExpiry: newExpiry,
         },
       }
     );
@@ -59,11 +63,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "Verification successful! Token activated.",
-        expiresAt: expiryTime,
+        message: "Token activated (inactive or expired).",
+        expiresAt: newExpiry,
       }),
     };
-
   } catch (err) {
     console.error(err);
     return {
