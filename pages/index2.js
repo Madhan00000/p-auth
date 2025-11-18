@@ -87,7 +87,7 @@ useEffect(() => {
 
   // When token is active, go to index3
   const handleAccessClick = () => {
-    router.push(`/index3?email=${encodeURIComponent(email)}`);
+    router.push(`/index4?email=${encodeURIComponent(email)}`);
   };
 
   return (
