@@ -9,6 +9,7 @@ export default function Index2() {
   const [tokenStatus, setTokenStatus] = useState("inactive");
   const [tokenExpiry, setTokenExpiry] = useState(null);
   const [timeLeft, setTimeLeft] = useState("");
+const [loading, setLoading] = useState(true);
 
   // Fetch user status from backend
   const fetchUserStatus = async (email) => {
@@ -33,6 +34,18 @@ export default function Index2() {
       fetchUserStatus(mail);
     }
   }, [router.query]);
+useEffect(() => {
+  if (router.query.email) {
+    const mail = router.query.email;
+    const ref = router.query.referralCode;
+    setEmail(mail);
+    setReferralCode(ref);
+
+    fetchUserStatus(mail).finally(() => {
+      setLoading(false);   // 🔥 stop loading AFTER data fetched
+    });
+  }
+}, [router.query]);
 
   // ⏱ Countdown Timer
   useEffect(() => {
@@ -117,26 +130,34 @@ export default function Index2() {
               </p>
             )}
 
-            {/* ✅ Buttons */}
-            {tokenStatus !== "active" ? (
-              <button style={styles.button} onClick={handleVerifyClick}>
-                Go to Verification Page
-              </button>
-            ) : (
-              <button style={styles.button} onClick={handleAccessClick}>
-                Access Dashboard (Index3)
-              </button>
-            )}
-              <button
-  style={{
-    ...styles.button,
-    backgroundColor: "#ff5722", // 🔥 Different color (orange-red)
-    marginLeft: "10px",
-  }}
-  onClick={() => window.location.reload()}
->
-  Refresh Status
-</button>
+{/* 🔥 Show Loading text until backend response arrives */}
+{loading ? (
+  <p style={{ marginTop: 20, fontWeight: "bold", color: "#444" }}>Loading...</p>
+) : (
+  <>
+    {tokenStatus !== "active" ? (
+      <button style={styles.button} onClick={handleVerifyClick}>
+        Go to Verification Page
+      </button>
+    ) : (
+      <button style={styles.button} onClick={handleAccessClick}>
+        Access Dashboard (Index3)
+      </button>
+    )}
+
+    <button
+      style={{
+        ...styles.button,
+        backgroundColor: "#ff5722",
+        marginTop: "10px",
+      }}
+      onClick={() => window.location.reload()}
+    >
+      Refresh Page
+    </button>
+  </>
+)}
+
 
           </div>
         )}
