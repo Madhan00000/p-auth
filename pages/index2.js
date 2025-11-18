@@ -127,6 +127,17 @@ export default function Index2() {
                 Access Dashboard (Index3)
               </button>
             )}
+              <button
+  style={{
+    ...styles.button,
+    backgroundColor: "#ff5722", // 🔥 Different color (orange-red)
+    marginLeft: "10px",
+  }}
+  onClick={() => window.location.reload()}
+>
+  Refresh Status
+</button>
+
           </div>
         )}
       </div>
